@@ -2,7 +2,7 @@
 Module tính toán các chỉ số định lượng:
 1. Chỉ số chu kỳ AHR999 (200-day Geometric Mean & Exponential Growth Line).
 2. Phân loại vùng AHR999 (Opportunity, DCA, Risk).
-3. Các chỉ số xu hướng / động lượng bổ trợ (SMA_20, RSI_14).
+3. Các chỉ số xu hướng / động lượng bổ trợ (SMA_20, SMA_50, SMA_200, RSI_14).
 """
 
 import logging
@@ -18,6 +18,8 @@ from config import (
     AHR_ZONE_OPPORTUNITY,
     AHR_ZONE_DCA,
     SMA_TREND_WINDOW,
+    SMA_50_WINDOW,
+    SMA_200_WINDOW,
     RSI_WINDOW,
 )
 
@@ -51,6 +53,8 @@ def calculate_ahr999_and_indicators(
     bottom_thresh: float = AHR_ZONE_OPPORTUNITY,
     dca_thresh: float = AHR_ZONE_DCA,
     sma_window: int = SMA_TREND_WINDOW,
+    sma_50_window: int = SMA_50_WINDOW,
+    sma_200_window: int = SMA_200_WINDOW,
     rsi_window: int = RSI_WINDOW,
     drop_na: bool = True,
 ) -> pd.DataFrame:
@@ -67,7 +71,7 @@ def calculate_ahr999_and_indicators(
        - 'opportunity' nếu ahr999 < bottom_thresh (0.45)
        - 'dca' nếu bottom_thresh <= ahr999 <= dca_thresh (0.45 - 1.20)
        - 'risk' nếu ahr999 > dca_thresh (> 1.20)
-    6. sma_20 và rsi_14 dùng làm bộ lọc động lượng và quản trị rủi ro.
+    6. sma_20, sma_50, sma_200 và rsi_14 dùng làm bộ lọc động lượng và quản trị rủi ro.
     """
     df = df.copy()
 
@@ -99,6 +103,8 @@ def calculate_ahr999_and_indicators(
 
     # 6. Các chỉ báo kỹ thuật lọc xu hướng / động lượng
     df["sma_20"] = df["close"].rolling(window=sma_window, min_periods=sma_window).mean()
+    df["sma_50"] = df["close"].rolling(window=sma_50_window, min_periods=sma_50_window).mean()
+    df["sma_200"] = df["close"].rolling(window=sma_200_window, min_periods=sma_200_window).mean()
     df["rsi_14"] = calc_rsi(df["close"], period=rsi_window)
 
     # 7. Xử lý hàng thiếu giá trị
