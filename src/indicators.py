@@ -68,9 +68,9 @@ def calculate_ahr999_and_indicators(
        10 ** (exp_a * log10(days_since_genesis) - exp_b)
     4. ahr999 = (close / cost_200d) * (close / exp_growth)
     5. ahr_zone:
-       - 'opportunity' nếu ahr999 < bottom_thresh (0.45)
-       - 'dca' nếu bottom_thresh <= ahr999 <= dca_thresh (0.45 - 1.20)
-       - 'risk' nếu ahr999 > dca_thresh (> 1.20)
+       - 'opportunity' nếu ahr999 < bottom_thresh (0.36)
+       - 'dca' nếu bottom_thresh <= ahr999 <= dca_thresh (0.36 - 1.00)
+       - 'risk' nếu ahr999 > dca_thresh (> 1.00)
     6. sma_20, sma_50, sma_200 và rsi_14 dùng làm bộ lọc động lượng và quản trị rủi ro.
     """
     df = df.copy()

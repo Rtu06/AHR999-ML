@@ -14,7 +14,7 @@ Dự án **BTC-AHR999-ML-V2** kế thừa nền tảng định lượng vĩ mô 
  │  TẦNG 1: ĐỊNH LƯỢNG CHU KỲ VĨ MÔ (Macro Cycle Quant Layer)                  │
  │  - Cost 200d (Geometric Mean): Đo lường chi phí vốn 200 ngày                │
  │  - Genesis Block (2009-01-03) & Exp Growth: Đường tăng trưởng hàm mũ        │
- │  - Chỉ số AHR999 & Phân vùng: Opportunity (< 0.45), DCA (0.45-1.2), Risk    │
+ │  - Chỉ số AHR999 & Phân vùng: Opportunity (< 0.36), DCA (0.36-1.0), Risk    │
  └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
@@ -23,8 +23,8 @@ Dự án **BTC-AHR999-ML-V2** kế thừa nền tảng định lượng vĩ mô 
  │  - 25 đặc trưng chu kỳ, lợi suất đa khung thời gian (7d - 365d), động lượng │
  │  - Chống rò rỉ dữ liệu (No Data Leakage) nghiêm ngặt                        │
  │  - Dự đoán xác suất tăng giá P(Up) sau 30 ngày                              │
- │  - Dải trễ Hysteresis: P >= 0.55 (Mua), P <= 0.45 (Bán), Giữ nguyên ở giữa │
- │  - Macro Guardrails: Chốt lời ép buộc khi AHR >= 2.0 (Bong bóng cực đại)   │
+ │  - Dải trễ Hysteresis: P >= 0.65 (Mua), P <= 0.45 (Bán), Giữ nguyên ở giữa │
+ │  - Macro Guardrails: Chốt lời ép buộc khi AHR >= 1.6 (Bong bóng cực đại)   │
  └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼

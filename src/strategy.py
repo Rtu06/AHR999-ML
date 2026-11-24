@@ -45,7 +45,7 @@ def evaluate_daily_signal(
     Quy tắc định lượng phân bổ tỷ trọng cho từng phiên:
     Trả về: (target_weight, signal_code, description)
     """
-    # 1. VÙNG CƠ HỘI ĐÁY (Opportunity Zone: ahr999 < 0.45)
+    # 1. VÙNG CƠ HỘI ĐÁY (Opportunity Zone: ahr999 < 0.36)
     if ahr_zone == "opportunity" or ahr999 < AHR_ZONE_OPPORTUNITY:
         if close > sma_20:
             return (
@@ -60,7 +60,7 @@ def evaluate_daily_signal(
                 "Đáy chu kỳ + Dưới SMA20 (tránh dao rơi) -> Tích lũy 80%, giữ 20% tiền mặt",
             )
 
-    # 2. VÙNG TÍCH LŨY ĐỊNH KỲ (DCA Zone: 0.45 <= ahr999 <= 1.20)
+    # 2. VÙNG TÍCH LŨY ĐỊNH KỲ (DCA Zone: 0.36 <= ahr999 <= 1.00)
     elif ahr_zone == "dca" or (AHR_ZONE_OPPORTUNITY <= ahr999 <= AHR_ZONE_DCA):
         if close > sma_20 and rsi_14 >= RSI_MOMENTUM_FILTER:
             return (
@@ -81,19 +81,19 @@ def evaluate_daily_signal(
                 "Vùng DCA + Dưới SMA20 (điều chỉnh ngắn hạn) -> Phòng thủ 35%",
             )
 
-    # 3. VÙNG RỦI RO / ĐỊNH GIÁ QUÁ CAO (Risk Zone: ahr999 > 1.20)
+    # 3. VÙNG RỦI RO / ĐỊNH GIÁ QUÁ CAO (Risk Zone: ahr999 > 1.00)
     else:
         if ahr999 >= AHR_ZONE_EXTREME_BUBBLE:
             return (
                 WEIGHT_RISK_EXTREME,
                 "RISK_EXTREME_BUBBLE",
-                "Đỉnh hưng phấn cực đại (ahr > 2.0) -> Chốt lời toàn bộ (0% BTC, 100% USDT)",
+                "Đỉnh hưng phấn cực đại (ahr > 1.6) -> Chốt lời toàn bộ (0% BTC, 100% USDT)",
             )
         elif close > sma_20:
             return (
                 WEIGHT_RISK_MOMENTUM,
                 "RISK_RUNNER",
-                "Vùng rủi ro (1.2 < ahr <= 2.0) + Trên SMA20 -> Giữ 25% runner theo trend",
+                "Vùng rủi ro (1.0 < ahr <= 1.6) + Trên SMA20 -> Giữ 25% runner theo trend",
             )
         else:
             return (
@@ -156,8 +156,8 @@ def generate_ml_signals(
        - exit_threshold < P(Up) < buy_threshold: Giữ nguyên vị thế phiên trước (chống over-trading & phí).
        
     2. Bộ lọc bảo vệ chu kỳ vĩ mô (Macro AHR Guardrails - tùy chọn):
-       - ahr999 >= 2.0 (Bong bóng cực đại): Bắt buộc hạ tỷ trọng về 0% chốt lời, phòng ngừa sụp đổ.
-       - ahr999 < 0.45 (Đáy định giá): Đảm bảo tỷ trọng tối thiểu 50% để không bán đáy khi thị trường nhiễu.
+       - ahr999 >= 1.6 (Bong bóng cực đại): Bắt buộc hạ tỷ trọng về 0% chốt lời, phòng ngừa sụp đổ.
+       - ahr999 < 0.36 (Đáy định giá): Đảm bảo tỷ trọng tối thiểu 50% để không bán đáy khi thị trường nhiễu.
     """
     df = df.copy()
 
@@ -203,11 +203,11 @@ def generate_ml_signals(
             if ahr >= AHR_ZONE_EXTREME_BUBBLE:
                 current_weight = 0.0
                 sig = "AHR_OVERRIDE_BUBBLE"
-                desc = f"AHR999={ahr:.2f} >= 2.0 (Bong bóng cực đại) -> Cưỡng chế thoát về USDT"
+                desc = f"AHR999={ahr:.2f} >= {AHR_ZONE_EXTREME_BUBBLE:.1f} (Bong bóng cực đại) -> Cưỡng chế thoát về USDT"
             elif ahr < AHR_ZONE_OPPORTUNITY and current_weight < 0.50:
                 current_weight = 0.80
                 sig = "AHR_OVERRIDE_BOTTOM"
-                desc = f"AHR999={ahr:.2f} < 0.45 (Đáy định giá siêu rẻ) -> Tích lũy tối thiểu 80%"
+                desc = f"AHR999={ahr:.2f} < {AHR_ZONE_OPPORTUNITY:.2f} (Đáy định giá siêu rẻ) -> Tích lũy tối thiểu 80%"
 
         target_weights.append(current_weight)
         signals.append(sig)

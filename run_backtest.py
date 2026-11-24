@@ -105,9 +105,9 @@ def plot_backtest_report(res: BacktestResult, save_path: Path = REPORT_CHART_FIL
     ax2.axhline(AHR_ZONE_DCA, color="orange", linestyle="--", linewidth=1.2, label=f"Ngưỡng DCA: {AHR_ZONE_DCA}")
 
     # Tô màu các vùng
-    ax2.axhspan(0, AHR_ZONE_OPPORTUNITY, color="green", alpha=0.15, label="Vùng Đáy Siêu Hời (<0.45)")
-    ax2.axhspan(AHR_ZONE_OPPORTUNITY, AHR_ZONE_DCA, color="gold", alpha=0.15, label="Vùng Tích Lũy DCA (0.45-1.20)")
-    ax2.axhspan(AHR_ZONE_DCA, max(df["ahr999"].max() * 1.05, 3.5), color="red", alpha=0.15, label="Vùng Rủi Ro / Quá Nhiệt (>1.20)")
+    ax2.axhspan(0, AHR_ZONE_OPPORTUNITY, color="green", alpha=0.15, label=f"Vùng Đáy Siêu Hời (<{AHR_ZONE_OPPORTUNITY})")
+    ax2.axhspan(AHR_ZONE_OPPORTUNITY, AHR_ZONE_DCA, color="gold", alpha=0.15, label=f"Vùng Tích Lũy DCA ({AHR_ZONE_OPPORTUNITY}-{AHR_ZONE_DCA:.2f})")
+    ax2.axhspan(AHR_ZONE_DCA, max(df["ahr999"].max() * 1.05, 3.5), color="red", alpha=0.15, label=f"Vùng Rủi Ro / Quá Nhiệt (>{AHR_ZONE_DCA:.2f})")
 
     ax2.set_ylabel("Chỉ số AHR999", fontsize=11, fontweight="bold")
     ax2.set_ylim(0, min(df["ahr999"].quantile(0.995) * 1.3, 5.0))

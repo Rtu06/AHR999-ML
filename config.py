@@ -64,10 +64,10 @@ AHR_EXP_B = 17.01
 WINDOW_COST_200D = 200
 
 # Ngưỡng phân loại vùng AHR999
-AHR_ZONE_OPPORTUNITY = 0.45  # ahr999 < 0.45: Vùng đáy định giá siêu hời (Bottom / High Value)
-AHR_ZONE_DCA = 1.20          # 0.45 <= ahr999 <= 1.20: Vùng tích lũy định kỳ (DCA Zone)
-                             # ahr999 > 1.20: Vùng định giá cao / rủi ro quá nóng (Risk Zone)
-AHR_ZONE_EXTREME_BUBBLE = 2.0  # Ngưỡng bong bóng hưng phấn cực đại (> 2.0)
+AHR_ZONE_OPPORTUNITY = 0.36  # ahr999 < 0.36: Vùng đáy định giá siêu hời (Bottom / High Value)
+AHR_ZONE_DCA = 1.00          # 0.36 <= ahr999 <= 1.00: Vùng tích lũy định kỳ (DCA Zone)
+                             # ahr999 > 1.00: Vùng định giá cao / rủi ro quá nóng (Risk Zone)
+AHR_ZONE_EXTREME_BUBBLE = 1.6  # Ngưỡng bong bóng hưng phấn cực đại (> 1.6)
 
 # ==============================================================================
 # CẤU HÌNH CHIẾN LƯỢC QUANT V1 (RULE-BASED STRATEGY)
@@ -80,16 +80,16 @@ RSI_WINDOW = 14              # Chu kỳ RSI 14 ngày
 RSI_MOMENTUM_FILTER = 45.0   # Mức RSI phân định động lượng tích cực trong vùng DCA
 
 # Tỷ trọng danh mục mục tiêu (Target Portfolio Weight) theo trạng thái thị trường
-WEIGHT_OPPORTUNITY_MOMENTUM = 1.00   # ahr < 0.45 và Close > SMA20 (vùng đáy + có đà hồi phục)
-WEIGHT_OPPORTUNITY_KNIFE = 0.80      # ahr < 0.45 và Close <= SMA20 (vùng đáy dao rơi, giữ 20% dự phòng)
+WEIGHT_OPPORTUNITY_MOMENTUM = 1.00   # ahr < 0.36 và Close > SMA20 (vùng đáy + có đà hồi phục)
+WEIGHT_OPPORTUNITY_KNIFE = 0.80      # ahr < 0.36 và Close <= SMA20 (vùng đáy dao rơi, giữ 20% dự phòng)
 
-WEIGHT_DCA_BULL = 0.75               # 0.45 <= ahr <= 1.20 và Close > SMA20 và RSI > 45 (uptrend lành mạnh)
-WEIGHT_DCA_NEUTRAL = 0.50            # 0.45 <= ahr <= 1.20 và Close > SMA20 (đi ngang / đà yếu)
-WEIGHT_DCA_DEFENSIVE = 0.35          # 0.45 <= ahr <= 1.20 và Close <= SMA20 (đang điều chỉnh)
+WEIGHT_DCA_BULL = 0.75               # 0.36 <= ahr <= 1.00 và Close > SMA20 và RSI > 45 (uptrend lành mạnh)
+WEIGHT_DCA_NEUTRAL = 0.50            # 0.36 <= ahr <= 1.00 và Close > SMA20 (đi ngang / đà yếu)
+WEIGHT_DCA_DEFENSIVE = 0.35          # 0.36 <= ahr <= 1.00 và Close <= SMA20 (đang điều chỉnh)
 
-WEIGHT_RISK_MOMENTUM = 0.25          # 1.20 < ahr <= 2.00 và Close > SMA20 (vùng nóng nhưng trend chưa gãy)
-WEIGHT_RISK_DEFENSIVE = 0.10         # 1.20 < ahr <= 2.00 và Close <= SMA20 (trend suy yếu ở vùng rủi ro)
-WEIGHT_RISK_EXTREME = 0.00           # ahr > 2.00: Đỉnh chu kỳ / hưng phấn tột độ -> 100% Tiền mặt (USDT)
+WEIGHT_RISK_MOMENTUM = 0.25          # 1.00 < ahr <= 1.60 và Close > SMA20 (vùng nóng nhưng trend chưa gãy)
+WEIGHT_RISK_DEFENSIVE = 0.10         # 1.00 < ahr <= 1.60 và Close <= SMA20 (trend suy yếu ở vùng rủi ro)
+WEIGHT_RISK_EXTREME = 0.00           # ahr > 1.60: Đỉnh chu kỳ / hưng phấn tột độ -> 100% Tiền mặt (USDT)
 
 # ==============================================================================
 # CẤU HÌNH MACHINE LEARNING V2 (TẦNG DỰ ĐOÁN XÁC SUẤT XU HƯỚNG)
@@ -112,9 +112,9 @@ MODEL_TYPE = "rf"
 SCALER_TYPE = "robust"
 
 # Ngưỡng xác suất ra quyết định vị thế (Hysteresis Banding để chống whipsaw)
-PROBA_BUY_THRESHOLD = 0.55   # P(Up) >= 0.55 -> Mở vị thế / Tăng tỷ trọng
+PROBA_BUY_THRESHOLD = 0.65   # P(Up) >= 0.65 -> Mở vị thế / Tăng tỷ trọng
 PROBA_EXIT_THRESHOLD = 0.45  # P(Up) <= 0.45 -> Thoát vị thế / Giảm tỷ trọng
-                             # 0.45 < P(Up) < 0.55 -> Giữ nguyên tỷ trọng phiên trước (tránh tốn phí)
+                             # 0.45 < P(Up) < 0.65 -> Giữ nguyên tỷ trọng phiên trước (tránh tốn phí)
 
 # Kết hợp bộ lọc vĩ mô AHR999 vào chiến lược ML (AHR Guardrails)
 ML_COMBINE_AHR_FILTER = True
