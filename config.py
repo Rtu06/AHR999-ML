@@ -74,6 +74,7 @@ AHR_ZONE_EXTREME_BUBBLE = 1.6  # Ngưỡng bong bóng hưng phấn cực đại 
 # ==============================================================================
 # Tham số kỹ thuật lọc xu hướng / động lượng để tránh bắt dao rơi
 SMA_TREND_WINDOW = 20        # SMA 20 ngày xác nhận ngắn/trung hạn
+SMA_BUFFER_PCT = 0.015       # Bộ đệm 1.5% dải trễ SMA chống whipsaw & giảm phí giao dịch
 SMA_50_WINDOW = 50           # SMA 50 ngày
 SMA_200_WINDOW = 200         # SMA 200 ngày
 RSI_WINDOW = 14              # Chu kỳ RSI 14 ngày
@@ -106,7 +107,7 @@ TEST_RATIO = 0.15            # 15% cuối cùng giữ nguyên làm Out-Of-Sample
 
 # Thuật toán mô hình: "logistic", "rf" (Random Forest), "lgbm" (LightGBM)
 # Tự động fallback sang HistGradientBoostingClassifier hoặc RandomForest nếu chưa cài LightGBM
-MODEL_TYPE = "rf"
+MODEL_TYPE = "logistic"
 
 # Chuẩn hóa đặc trưng: "robust" (RobustScaler - bền vững với ngoại lai) hoặc "standard" (StandardScaler)
 SCALER_TYPE = "robust"
@@ -115,6 +116,9 @@ SCALER_TYPE = "robust"
 PROBA_BUY_THRESHOLD = 0.65   # P(Up) >= 0.65 -> Mở vị thế / Tăng tỷ trọng
 PROBA_EXIT_THRESHOLD = 0.45  # P(Up) <= 0.45 -> Thoát vị thế / Giảm tỷ trọng
                              # 0.45 < P(Up) < 0.65 -> Giữ nguyên tỷ trọng phiên trước (tránh tốn phí)
+
+# Biên độ điều chỉnh tỷ trọng cho chiến lược lai Hybrid V3
+HYBRID_TILT_WEIGHT = 0.15    # ±15% tỷ trọng từ ML trên nền tảng Quant
 
 # Kết hợp bộ lọc vĩ mô AHR999 vào chiến lược ML (AHR Guardrails)
 ML_COMBINE_AHR_FILTER = True

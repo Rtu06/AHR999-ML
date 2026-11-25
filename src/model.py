@@ -36,22 +36,24 @@ def get_model(model_type: str = MODEL_TYPE, random_state: int = RANDOM_STATE) ->
     model_type = model_type.lower()
 
     if model_type == "logistic":
-        logger.info("Khởi tạo mô hình Logistic Regression (L2 regularization, C=0.1)...")
+        logger.info("Khởi tạo mô hình Logistic Regression (L2 regularization, C=0.05, balanced)...")
         return LogisticRegression(
-            C=0.1,
-            max_iter=1000,
+            C=0.05,
+            max_iter=2000,
             solver="lbfgs",
+            class_weight="balanced",
             random_state=random_state,
         )
 
     elif model_type == "rf":
-        logger.info("Khởi tạo mô hình Random Forest (max_depth=5, min_samples_split=20)...")
+        logger.info("Khởi tạo mô hình Random Forest (max_depth=3, min_samples_leaf=30, balanced)...")
         return RandomForestClassifier(
-            n_estimators=100,
-            max_depth=5,
-            min_samples_split=20,
-            min_samples_leaf=10,
+            n_estimators=150,
+            max_depth=3,
+            min_samples_split=30,
+            min_samples_leaf=30,
             max_features="sqrt",
+            class_weight="balanced",
             random_state=random_state,
             n_jobs=-1,
         )
@@ -59,14 +61,16 @@ def get_model(model_type: str = MODEL_TYPE, random_state: int = RANDOM_STATE) ->
     elif model_type == "lgbm":
         try:
             import lightgbm as lgb
-            logger.info("Khởi tạo mô hình LightGBM Classifier...")
+            logger.info("Khởi tạo mô hình LightGBM Classifier (chống overfitting)...")
             return lgb.LGBMClassifier(
                 n_estimators=100,
-                max_depth=4,
-                num_leaves=15,
-                learning_rate=0.03,
-                subsample=0.8,
-                colsample_bytree=0.8,
+                max_depth=3,
+                num_leaves=7,
+                learning_rate=0.02,
+                min_child_samples=30,
+                reg_alpha=1.0,
+                reg_lambda=2.0,
+                class_weight="balanced",
                 random_state=random_state,
                 verbose=-1,
             )
@@ -76,19 +80,22 @@ def get_model(model_type: str = MODEL_TYPE, random_state: int = RANDOM_STATE) ->
             )
             return HistGradientBoostingClassifier(
                 max_iter=100,
-                max_depth=4,
-                learning_rate=0.03,
+                max_depth=3,
+                min_samples_leaf=30,
+                learning_rate=0.02,
+                l2_regularization=2.0,
+                class_weight="balanced",
                 random_state=random_state,
             )
 
     else:
-        logger.warning("Không nhận diện được model_type='%s'. Mặc định sử dụng Random Forest.", model_type)
-        return RandomForestClassifier(
-            n_estimators=100,
-            max_depth=5,
-            min_samples_split=20,
+        logger.warning("Không nhận diện được model_type='%s'. Mặc định sử dụng Logistic Regression.", model_type)
+        return LogisticRegression(
+            C=0.05,
+            max_iter=2000,
+            solver="lbfgs",
+            class_weight="balanced",
             random_state=random_state,
-            n_jobs=-1,
         )
 
 
@@ -135,19 +142,30 @@ def evaluate_model(
     - Recall
     - F1-Score
     - ROC-AUC
+    Tự động lọc bỏ các mẫu có nhãn NaN (ví dụ 30 ngày cuối chuỗi chưa xảy ra).
     """
     y_prob = predict_probabilities(model, X)
-    y_pred = (y_prob >= threshold).astype(int)
+
+    # Lọc bỏ các mẫu NaN trong y nếu có
+    valid_mask = ~np.isnan(y)
+    if not np.all(valid_mask):
+        y_eval = y[valid_mask].astype(int)
+        y_prob_eval = y_prob[valid_mask]
+    else:
+        y_eval = y.astype(int)
+        y_prob_eval = y_prob
+
+    y_pred = (y_prob_eval >= threshold).astype(int)
 
     metrics = {
-        "accuracy": float(accuracy_score(y, y_pred)),
-        "precision": float(precision_score(y, y_pred, zero_division=0)),
-        "recall": float(recall_score(y, y_pred, zero_division=0)),
-        "f1": float(f1_score(y, y_pred, zero_division=0)),
+        "accuracy": float(accuracy_score(y_eval, y_pred)),
+        "precision": float(precision_score(y_eval, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_eval, y_pred, zero_division=0)),
+        "f1": float(f1_score(y_eval, y_pred, zero_division=0)),
     }
 
     try:
-        metrics["roc_auc"] = float(roc_auc_score(y, y_prob))
+        metrics["roc_auc"] = float(roc_auc_score(y_eval, y_prob_eval))
     except Exception:
         metrics["roc_auc"] = 0.50
 

@@ -102,8 +102,8 @@ def run_training_pipeline() -> None:
     df_ml.to_csv(DATA_ML_FEATURES_FILE, index=False)
     logger.info("Đã lưu dữ liệu ML features (%d dòng, %d cột) vào: %s", len(df_ml), len(feature_cols), DATA_ML_FEATURES_FILE)
 
-    # Tỷ lệ nhãn mục tiêu
-    target_dist = df_ml["target"].value_counts(normalize=True).to_dict()
+    # Tỷ lệ nhãn mục tiêu (trên các dòng đã có nhãn)
+    target_dist = df_ml["target"].dropna().value_counts(normalize=True).to_dict()
     logger.info(
         "Phân bổ nhãn mục tiêu: Up (1) = %.1f%% | Down/Neutral (0) = %.1f%%",
         target_dist.get(1, 0.0) * 100,

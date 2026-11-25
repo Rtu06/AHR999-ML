@@ -38,7 +38,7 @@ from src.indicators import calculate_ahr999_and_indicators
 from src.features import build_features_and_target
 from src.dataset import prepare_ml_dataset
 from src.model import load_model_bundle, predict_probabilities
-from src.strategy import generate_quant_v1_signals, generate_ml_signals
+from src.strategy import generate_quant_v1_signals, generate_ml_signals, generate_hybrid_signals
 from src.backtest import BacktestEngine, BacktestResult
 
 logging.basicConfig(
@@ -50,6 +50,7 @@ logger = logging.getLogger("Compare")
 
 
 def print_comparison_table(
+    summary_hybrid: dict,
     summary_ml: dict,
     summary_quant: dict,
     test_start: str,
@@ -57,69 +58,72 @@ def print_comparison_table(
     total_days: int,
     years: float,
 ) -> None:
-    """In bảng so sánh hiệu suất 3 cột trực quan ra console."""
-    sep = "=" * 94
-    sub_sep = "-" * 94
+    """In bảng so sánh hiệu suất 4 cột trực quan ra console."""
+    sep = "=" * 114
+    sub_sep = "-" * 114
     print("\n" + sep)
-    print("      BÁO CÁO ĐỐI CHIẾU HIỆU SUẤT TRÊN TẬP TEST (OUT-OF-SAMPLE TEST SET)")
+    print("                 BÁO CÁO ĐỐI CHIẾU HIỆU SUẤT TRÊN TẬP TEST (OUT-OF-SAMPLE TEST SET)")
     print(sep)
     print(f" Khoảng thời gian Test : {test_start}  -->  {test_end} ({total_days} ngày / {years} năm)")
     print(f" Vốn ban đầu           : ${INITIAL_CAPITAL:,.2f}")
     print(f" Phí giao dịch         : {FEE_RATE * 100:.2f}% mỗi lượt tái cân bằng")
     print(sub_sep)
     print(
-        f" {'CHỈ SỐ HIỆU SUẤT TÀI CHÍNH':<30} | {'ML STRATEGY (V2)':>18} | {'QUANT V1 (AHR999)':>18} | {'BUY & HOLD BTC':>18}"
+        f" {'CHỈ SỐ HIỆU SUẤT TÀI CHÍNH':<28} | {'HYBRID V3 (LAI)':>17} | {'ML STRATEGY (V2)':>17} | {'QUANT V1 (BUFFERED)':>20} | {'BUY & HOLD BTC':>17}"
     )
     print(sub_sep)
     print(
-        f" {'Vốn cuối kỳ (Final Equity)':<30} | ${summary_ml['strat_final_equity']:>17,.2f} | ${summary_quant['strat_final_equity']:>17,.2f} | ${summary_ml['bnh_final_equity']:>17,.2f}"
+        f" {'Vốn cuối kỳ (Final Equity)':<28} | ${summary_hybrid['strat_final_equity']:>16,.2f} | ${summary_ml['strat_final_equity']:>16,.2f} | ${summary_quant['strat_final_equity']:>19,.2f} | ${summary_ml['bnh_final_equity']:>16,.2f}"
     )
     print(
-        f" {'Tổng lợi nhuận (Total Return)':<30} | {summary_ml['strat_total_return']:>17.2f}% | {summary_quant['strat_total_return']:>17.2f}% | {summary_ml['bnh_total_return']:>17.2f}%"
+        f" {'Tổng lợi nhuận (Total Return)':<28} | {summary_hybrid['strat_total_return']:>16.2f}% | {summary_ml['strat_total_return']:>16.2f}% | {summary_quant['strat_total_return']:>19.2f}% | {summary_ml['bnh_total_return']:>16.2f}%"
     )
     print(
-        f" {'Lợi nhuận kép năm (CAGR)':<30} | {summary_ml['strat_cagr']:>17.2f}% | {summary_quant['strat_cagr']:>17.2f}% | {summary_ml['bnh_cagr']:>17.2f}%"
+        f" {'Lợi nhuận kép năm (CAGR)':<28} | {summary_hybrid['strat_cagr']:>16.2f}% | {summary_ml['strat_cagr']:>16.2f}% | {summary_quant['strat_cagr']:>19.2f}% | {summary_ml['bnh_cagr']:>16.2f}%"
     )
     print(
-        f" {'Độ biến động năm (Volatility)':<30} | {summary_ml['strat_volatility']:>17.2f}% | {summary_quant['strat_volatility']:>17.2f}% | {summary_ml['bnh_volatility']:>17.2f}%"
+        f" {'Độ biến động năm (Volatility)':<28} | {summary_hybrid['strat_volatility']:>16.2f}% | {summary_ml['strat_volatility']:>16.2f}% | {summary_quant['strat_volatility']:>19.2f}% | {summary_ml['bnh_volatility']:>16.2f}%"
     )
     print(
-        f" {'Sụt giảm tối đa (Max Drawdown)':<30} | {summary_ml['strat_max_dd']:>17.2f}% | {summary_quant['strat_max_dd']:>17.2f}% | {summary_ml['bnh_max_dd']:>17.2f}%"
+        f" {'Sụt giảm tối đa (Max Drawdown)':<28} | {summary_hybrid['strat_max_dd']:>16.2f}% | {summary_ml['strat_max_dd']:>16.2f}% | {summary_quant['strat_max_dd']:>19.2f}% | {summary_ml['bnh_max_dd']:>16.2f}%"
     )
     print(
-        f" {'Thời gian dưới đỉnh (DD Days)':<30} | {summary_ml['strat_max_dd_duration_days']:>13} ngày | {summary_quant['strat_max_dd_duration_days']:>13} ngày | {summary_ml['bnh_max_dd_duration_days']:>13} ngày"
+        f" {'Thời gian dưới đỉnh (DD Days)':<28} | {summary_hybrid['strat_max_dd_duration_days']:>12} ngày | {summary_ml['strat_max_dd_duration_days']:>12} ngày | {summary_quant['strat_max_dd_duration_days']:>15} ngày | {summary_ml['bnh_max_dd_duration_days']:>12} ngày"
     )
     print(
-        f" {'Tỷ số Sharpe (rf=0%)':<30} | {summary_ml['strat_sharpe']:>18.2f} | {summary_quant['strat_sharpe']:>18.2f} | {summary_ml['bnh_sharpe']:>18.2f}"
+        f" {'Tỷ số Sharpe (rf=0%)':<28} | {summary_hybrid['strat_sharpe']:>17.2f} | {summary_ml['strat_sharpe']:>17.2f} | {summary_quant['strat_sharpe']:>20.2f} | {summary_ml['bnh_sharpe']:>17.2f}"
     )
     print(
-        f" {'Tỷ số Sortino':<30} | {summary_ml['strat_sortino']:>18.2f} | {summary_quant['strat_sortino']:>18.2f} | {summary_ml['bnh_sortino']:>18.2f}"
+        f" {'Tỷ số Sortino':<28} | {summary_hybrid['strat_sortino']:>17.2f} | {summary_ml['strat_sortino']:>17.2f} | {summary_quant['strat_sortino']:>20.2f} | {summary_ml['bnh_sortino']:>17.2f}"
     )
     print(
-        f" {'Tỷ số Calmar':<30} | {summary_ml['strat_calmar']:>18.2f} | {summary_quant['strat_calmar']:>18.2f} | {summary_ml['bnh_calmar']:>18.2f}"
+        f" {'Tỷ số Calmar':<28} | {summary_hybrid['strat_calmar']:>17.2f} | {summary_ml['strat_calmar']:>17.2f} | {summary_quant['strat_calmar']:>20.2f} | {summary_ml['bnh_calmar']:>17.2f}"
     )
     print(sub_sep)
     print(
-        f" {'Số lần tái cân bằng':<30} | {summary_ml['rebalance_count']:>18} | {summary_quant['rebalance_count']:>18} | {1:>18}"
+        f" {'Số lần tái cân bằng':<28} | {summary_hybrid['rebalance_count']:>17} | {summary_ml['rebalance_count']:>17} | {summary_quant['rebalance_count']:>20} | {1:>17}"
     )
     print(
-        f" {'Tổng phí giao dịch đã trả':<30} | ${summary_ml['total_fees_paid']:>17,.2f} | ${summary_quant['total_fees_paid']:>17,.2f} | ${INITIAL_CAPITAL * FEE_RATE:>17,.2f}"
+        f" {'Tổng phí giao dịch đã trả':<28} | ${summary_hybrid['total_fees_paid']:>16,.2f} | ${summary_ml['total_fees_paid']:>16,.2f} | ${summary_quant['total_fees_paid']:>19,.2f} | ${INITIAL_CAPITAL * FEE_RATE:>16,.2f}"
     )
     print(
-        f" {'Tỷ lệ ngày dương (Win Rate)':<30} | {summary_ml['daily_win_rate']:>17.1f}% | {summary_quant['daily_win_rate']:>17.1f}% | {'-':>18}"
+        f" {'Tỷ lệ ngày dương (Win Rate)':<28} | {summary_hybrid['daily_win_rate']:>16.1f}% | {summary_ml['daily_win_rate']:>16.1f}% | {summary_quant['daily_win_rate']:>19.1f}% | {'-':>17}"
     )
     print(sep + "\n")
 
 
 def plot_comparison_chart(
+    res_hybrid: BacktestResult,
     res_ml: BacktestResult,
     res_quant: BacktestResult,
     save_path: Path = COMPARISON_CHART_FILE,
 ) -> None:
     """Vẽ biểu đồ đối chiếu 5 tầng chuyên nghiệp chất lượng cao (300 DPI)."""
+    df_hyb = res_hybrid.df_equity.copy()
     df_ml = res_ml.df_equity.copy()
     df_quant = res_quant.df_equity.copy()
 
+    df_hyb["date_dt"] = pd.to_datetime(df_hyb["date"])
     df_ml["date_dt"] = pd.to_datetime(df_ml["date"])
     df_quant["date_dt"] = pd.to_datetime(df_quant["date"])
 
@@ -161,7 +165,8 @@ def plot_comparison_chart(
     # BẢNG 3: Tỷ trọng phân bổ tài sản (Target Weight)
     # -------------------------------------------------------------
     ax2 = axes[2]
-    ax2.plot(df_ml["date_dt"], df_ml["actual_weight"], label="ML Strategy v2 Weight", color="#2563eb", linewidth=1.6)
+    ax2.plot(df_hyb["date_dt"], df_hyb["actual_weight"], label="Hybrid V3 Weight", color="#10b981", linewidth=1.8)
+    ax2.plot(df_ml["date_dt"], df_ml["actual_weight"], label="ML Strategy v2 Weight", color="#2563eb", linestyle="-.", linewidth=1.4)
     ax2.plot(df_quant["date_dt"], df_quant["actual_weight"], label="Quant v1 Rule Weight", color="#ea580c", linestyle="--", linewidth=1.4)
     ax2.set_title("3. Tỷ Trọng Phân Bổ Danh Mục Mục Tiêu (Actual Portfolio Weight: BTC vs. USDT)", fontsize=13, fontweight="bold", pad=8)
     ax2.set_ylabel("Tỷ trọng BTC", fontsize=10, fontweight="bold")
@@ -173,8 +178,9 @@ def plot_comparison_chart(
     # BẢNG 4: Đường cong vốn (Equity Curve)
     # -------------------------------------------------------------
     ax3 = axes[3]
-    ax3.plot(df_ml["date_dt"], df_ml["strat_equity"], label=f"ML Strategy v2 (+{res_ml.summary['strat_total_return']:.1f}%)", color="#2563eb", linewidth=2.2)
-    ax3.plot(df_quant["date_dt"], df_quant["strat_equity"], label=f"Quant v1 Baseline (+{res_quant.summary['strat_total_return']:.1f}%)", color="#ea580c", linewidth=1.8, linestyle="--")
+    ax3.plot(df_hyb["date_dt"], df_hyb["strat_equity"], label=f"Hybrid V3 (+{res_hybrid.summary['strat_total_return']:.1f}%)", color="#10b981", linewidth=2.4)
+    ax3.plot(df_ml["date_dt"], df_ml["strat_equity"], label=f"ML Strategy v2 (+{res_ml.summary['strat_total_return']:.1f}%)", color="#2563eb", linewidth=1.8, linestyle="-.")
+    ax3.plot(df_quant["date_dt"], df_quant["strat_equity"], label=f"Quant v1 Baseline (+{res_quant.summary['strat_total_return']:.1f}%)", color="#ea580c", linewidth=1.6, linestyle="--")
     ax3.plot(df_ml["date_dt"], df_ml["bnh_equity"], label=f"Buy & Hold BTC (+{res_ml.summary['bnh_total_return']:.1f}%)", color="#64748b", linewidth=1.5, linestyle=":")
     ax3.set_title("4. So Sánh Đường Cong Tăng Trưởng Vốn (Equity Curve, Vốn Gốc $10,000 Đã Trừ Phí)", fontsize=13, fontweight="bold", pad=8)
     ax3.set_ylabel("Giá trị danh mục (USD)", fontsize=10, fontweight="bold")
@@ -185,10 +191,11 @@ def plot_comparison_chart(
     # BẢNG 5: Mức sụt giảm từ đỉnh (Drawdown %)
     # -------------------------------------------------------------
     ax4 = axes[4]
-    ax4.plot(df_ml["date_dt"], df_ml["strat_drawdown"] * 100, label=f"ML Strategy Max DD ({res_ml.summary['strat_max_dd']:.1f}%)", color="#2563eb", linewidth=1.6)
+    ax4.plot(df_hyb["date_dt"], df_hyb["strat_drawdown"] * 100, label=f"Hybrid V3 Max DD ({res_hybrid.summary['strat_max_dd']:.1f}%)", color="#10b981", linewidth=1.8)
+    ax4.plot(df_ml["date_dt"], df_ml["strat_drawdown"] * 100, label=f"ML Strategy Max DD ({res_ml.summary['strat_max_dd']:.1f}%)", color="#2563eb", linewidth=1.4, linestyle="-.")
     ax4.plot(df_quant["date_dt"], df_quant["strat_drawdown"] * 100, label=f"Quant v1 Max DD ({res_quant.summary['strat_max_dd']:.1f}%)", color="#ea580c", linewidth=1.4, linestyle="--")
     ax4.plot(df_ml["date_dt"], df_ml["bnh_drawdown"] * 100, label=f"Buy & Hold Max DD ({res_ml.summary['bnh_max_dd']:.1f}%)", color="#dc2626", linewidth=1.2, linestyle=":")
-    ax4.fill_between(df_ml["date_dt"], df_ml["strat_drawdown"] * 100, 0, color="#2563eb", alpha=0.1)
+    ax4.fill_between(df_hyb["date_dt"], df_hyb["strat_drawdown"] * 100, 0, color="#10b981", alpha=0.1)
     ax4.set_title("5. So Sánh Mức Sụt Giảm Từ Đỉnh (Underwater Drawdown %)", fontsize=13, fontweight="bold", pad=8)
     ax4.set_ylabel("Drawdown (%)", fontsize=10, fontweight="bold")
     ax4.set_xlabel("Thời gian", fontsize=10, fontweight="bold")
@@ -248,8 +255,15 @@ def run_comparison_pipeline() -> None:
     logger.info("Bước 3: Dự đoán xác suất tăng giá P(Up) trên tập Test...")
     y_prob_test = predict_probabilities(model, X_test)
 
-    # 4. Sinh tín hiệu giao dịch cho 2 chiến lược trên cùng tập Test
-    logger.info("Bước 4: Sinh tín hiệu phân bổ danh mục cho ML Strategy và Quant v1 Baseline...")
+    # 4. Sinh tín hiệu giao dịch cho 3 chiến lược trên cùng tập Test
+    logger.info("Bước 4: Sinh tín hiệu phân bổ danh mục cho Hybrid V3, ML Strategy và Quant v1 Baseline...")
+    df_test_hybrid = generate_hybrid_signals(
+        df_test,
+        proba=y_prob_test,
+        buy_threshold=PROBA_BUY_THRESHOLD,
+        exit_threshold=PROBA_EXIT_THRESHOLD,
+        combine_ahr_filter=ML_COMBINE_AHR_FILTER,
+    )
     df_test_ml = generate_ml_signals(
         df_test,
         proba=y_prob_test,
@@ -266,15 +280,17 @@ def run_comparison_pipeline() -> None:
         fee_rate=FEE_RATE,
         risk_free_rate=RISK_FREE_RATE,
     )
+    res_hybrid = engine.run(df_test_hybrid)
     res_ml = engine.run(df_test_ml)
     res_quant = engine.run(df_test_quant)
 
-    # 6. In bảng so sánh 3 chiến lược
+    # 6. In bảng so sánh các chiến lược
     test_start = df_test["date"].iloc[0]
     test_end = df_test["date"].iloc[-1]
     days = (pd.to_datetime(test_end) - pd.to_datetime(test_start)).days
     years = round(days / 365.25, 2)
     print_comparison_table(
+        summary_hybrid=res_hybrid.summary,
         summary_ml=res_ml.summary,
         summary_quant=res_quant.summary,
         test_start=test_start,
@@ -285,7 +301,7 @@ def run_comparison_pipeline() -> None:
 
     # 7. Vẽ biểu đồ so sánh 5 tầng chuyên sâu
     logger.info("Bước 7: Xuất biểu đồ so sánh chuyên sâu...")
-    plot_comparison_chart(res_ml, res_quant, save_path=COMPARISON_CHART_FILE)
+    plot_comparison_chart(res_hybrid, res_ml, res_quant, save_path=COMPARISON_CHART_FILE)
 
     logger.info(">>> HOÀN TẤT ĐỐI CHIẾU THÀNH CÔNG <<<")
 

@@ -103,9 +103,11 @@ def prepare_ml_dataset(
     X_val = scaler.transform(df_val[feature_cols])
     X_test = scaler.transform(df_test[feature_cols])
 
-    y_train = df_train[target_col].to_numpy(dtype=int)
-    y_val = df_val[target_col].to_numpy(dtype=int)
-    y_test = df_test[target_col].to_numpy(dtype=int)
+    # y_train và y_val luôn đủ nhãn (nằm ở 70% và 15% đầu chuỗi)
+    y_train = df_train[target_col].dropna().to_numpy(dtype=int)
+    y_val = df_val[target_col].dropna().to_numpy(dtype=int)
+    # y_test giữ dạng float vì 30 ngày cuối chuỗi chưa có kết quả tương lai (NaN)
+    y_test = df_test[target_col].to_numpy(dtype=float)
 
     return DatasetBundle(
         df_train=df_train,

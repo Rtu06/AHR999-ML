@@ -1,104 +1,104 @@
 {
     "metadata": {
-        "model_type": "rf",
+        "model_type": "logistic",
         "scaler_type": "robust",
         "horizon_days": 30,
         "train_ratio": 0.7,
         "val_ratio": 0.15,
         "test_ratio": 0.15,
-        "train_samples": 1955,
-        "val_samples": 419,
-        "test_samples": 419,
+        "train_samples": 1976,
+        "val_samples": 423,
+        "test_samples": 424,
         "train_date_range": [
             "2019-03-04",
-            "2024-07-09"
+            "2024-07-30"
         ],
         "val_date_range": [
-            "2024-07-10",
-            "2025-09-01"
+            "2024-07-31",
+            "2025-09-26"
         ],
         "test_date_range": [
-            "2025-09-02",
-            "2026-10-25"
+            "2025-09-27",
+            "2026-11-24"
         ],
         "test_metrics": {
-            "accuracy": 0.5035799522673031,
-            "precision": 0.48412698412698413,
-            "recall": 0.9336734693877551,
-            "f1": 0.6376306620209059,
-            "roc_auc": 0.4938683993776882
+            "accuracy": 0.6243654822335025,
+            "precision": 0.5818965517241379,
+            "recall": 0.7258064516129032,
+            "f1": 0.645933014354067,
+            "roc_auc": 0.6713709677419355
         },
         "val_metrics": {
-            "accuracy": 0.6467780429594272,
-            "precision": 0.6777408637873754,
-            "recall": 0.8,
-            "f1": 0.7338129496402878,
-            "roc_auc": 0.71987087517934
+            "accuracy": 0.5153664302600472,
+            "precision": 0.6842105263157895,
+            "recall": 0.39846743295019155,
+            "f1": 0.5036319612590799,
+            "roc_auc": 0.6454519653753371
         }
     },
     "metrics": {
         "train": {
-            "accuracy": 0.8383631713554988,
-            "precision": 0.8235294117647058,
-            "recall": 0.9097472924187726,
-            "f1": 0.8644939965694682,
-            "roc_auc": 0.9393916306863466
+            "accuracy": 0.6543522267206477,
+            "precision": 0.7044804575786463,
+            "recall": 0.664568345323741,
+            "f1": 0.6839426191577973,
+            "roc_auc": 0.6999952121636025
         },
         "val": {
-            "accuracy": 0.6467780429594272,
-            "precision": 0.6777408637873754,
-            "recall": 0.8,
-            "f1": 0.7338129496402878,
-            "roc_auc": 0.71987087517934
+            "accuracy": 0.5153664302600472,
+            "precision": 0.6842105263157895,
+            "recall": 0.39846743295019155,
+            "f1": 0.5036319612590799,
+            "roc_auc": 0.6454519653753371
         },
         "test": {
-            "accuracy": 0.5035799522673031,
-            "precision": 0.48412698412698413,
-            "recall": 0.9336734693877551,
-            "f1": 0.6376306620209059,
-            "roc_auc": 0.4938683993776882
+            "accuracy": 0.6243654822335025,
+            "precision": 0.5818965517241379,
+            "recall": 0.7258064516129032,
+            "f1": 0.645933014354067,
+            "roc_auc": 0.6713709677419355
         }
     },
     "top_features": [
         {
             "feature": "ahr999",
-            "importance": 0.11490962544749601
+            "importance": 0.514511533459171
         },
         {
-            "feature": "ahr999_change_90d",
-            "importance": 0.10453479403020667
+            "feature": "is_zone_opportunity",
+            "importance": 0.45432460658149165
         },
         {
-            "feature": "ahr999_change_180d",
-            "importance": 0.08891461325880523
-        },
-        {
-            "feature": "volatility_30d",
-            "importance": 0.08069739206897297
-        },
-        {
-            "feature": "return_180d",
-            "importance": 0.0769809992029848
-        },
-        {
-            "feature": "rsi_14",
-            "importance": 0.05836379309617588
-        },
-        {
-            "feature": "return_365d",
-            "importance": 0.055608707793629204
+            "feature": "is_zone_risk",
+            "importance": 0.42990385292125394
         },
         {
             "feature": "return_90d",
-            "importance": 0.05310424811605623
+            "importance": 0.42988579583479514
         },
         {
-            "feature": "close_to_sma_200",
-            "importance": 0.047994306402496724
+            "feature": "ahr999_change_180d",
+            "importance": 0.32570941466488296
+        },
+        {
+            "feature": "ahr999_change_90d",
+            "importance": 0.32113160306608574
+        },
+        {
+            "feature": "close_to_sma_50",
+            "importance": 0.23919242731480497
         },
         {
             "feature": "ahr999_change_365d",
-            "importance": 0.04674365542638461
+            "importance": 0.19918828174973943
+        },
+        {
+            "feature": "volatility_14d",
+            "importance": 0.17389041218219511
+        },
+        {
+            "feature": "vol_to_ma_7d",
+            "importance": 0.16617669922438397
         }
     ]
 }

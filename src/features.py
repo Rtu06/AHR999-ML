@@ -146,17 +146,16 @@ def build_features_and_target(
     # Lưu lại kích thước ban đầu
     initial_len = len(df)
 
-    # Loại bỏ các dòng thiếu feature X (đầu chuỗi) hoặc thiếu target y (cuối chuỗi)
-    df_clean = df.dropna(subset=feature_cols + ["target"]).copy()
-    df_clean["target"] = df_clean["target"].astype(int)
+    # Loại bỏ các dòng thiếu feature X (đầu chuỗi 365d),
+    # nhưng GIỮ NGUYÊN các dòng cuối chuỗi dù thiếu nhãn target y (để phục vụ backtest/live trading đến ngày mới nhất)
+    df_clean = df.dropna(subset=feature_cols).copy()
     df_clean = df_clean.reset_index(drop=True)
 
     dropped_count = initial_len - len(df_clean)
     logger.info(
-        "Kỹ nghệ đặc trưng hoàn tất: %d dòng ban đầu -> loại bỏ %d dòng thiếu (đầu chuỗi 365d + cuối chuỗi %dd) -> %d dòng sạch.",
+        "Kỹ nghệ đặc trưng hoàn tất: %d dòng ban đầu -> loại bỏ %d dòng thiếu feature đầu chuỗi -> %d dòng sẵn sàng.",
         initial_len,
         dropped_count,
-        horizon_days,
         len(df_clean),
     )
 
